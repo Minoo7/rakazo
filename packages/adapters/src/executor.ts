@@ -1427,7 +1427,10 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             semanticMemoryEnabled,
             semanticMemoryForgets: Boolean(semanticMemory?.forget),
             mediaImagesEnabled: Boolean(deps.artifacts && mediaGeneration?.capabilities.images),
-            modelImageSearchEnabled: supportsModelImageSearch(mainRunModel.provider),
+            modelImageSearchEnabled: supportsModelImageSearch(
+              mainRunModel.provider,
+              mainRunModel.apiProtocol,
+            ),
             mediaVideoEnabled: Boolean(deps.artifacts && mediaGeneration?.capabilities.video),
             cloudAgentEnabled: cloudAgentsEnabled(cloudAgent, run.spaceId),
             paymentWalletEnabled,
