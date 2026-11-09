@@ -77,6 +77,7 @@ import { resolveCompletedSecretLeftover } from "./run-secret.js";
 import type { ToolRequest } from "./run-tool-request.js";
 import { BUILTIN_AGENT_TOOL_NAMES, READ_ONLY_AGENT_TOOLS } from "./run-tool-selection.js";
 import { callMediaTool } from "./run-tools-files.js";
+import { trustSearchResult } from "./run-tools-integrations.js";
 import { USER_COMPUTER_TOOLS, userComputerGate } from "./run-tools-user-computer.js";
 import { connectorTrustKeys } from "./run-trust.js";
 import { watchFromTool } from "./schedule-tools.js";
@@ -427,6 +428,7 @@ export async function gateToolCall(
   // A fetch to a new site is gated like any action, so it needs an effect to approve.
   const applied =
     READ_ONLY_AGENT_TOOLS.has(name) &&
+    !needsApprovalEarly &&
     siteGate !== "new" &&
     nextApprovedTool !== name &&
     !approvedEffectKey
@@ -570,6 +572,7 @@ export async function gateToolCall(
   if (applied?.duplicate) {
     const gate = resolveDuplicateEffectGate(applied.effect, name);
     if (gate.action === "return") {
+      if (applied.effect.status === "completed") trustSearchResult(ctx, name, gate.result);
       if (name === "request_secret") {
         const replacementSecret = await deps.prisma.secret.findFirst({
           where: {
@@ -706,7 +709,10 @@ function createToolCall(
       });
       if (current) {
         const retryGate = resolveDuplicateEffectGate(current, name);
-        if (retryGate.action === "return") return retryGate.result;
+        if (retryGate.action === "return") {
+          if (current.status === "completed") trustSearchResult(ctx, name, retryGate.result);
+          return retryGate.result;
+        }
         if (retryGate.action === "uncertain") {
           return settleToolUncertainty(ctx, call, applied!.effect.id, name);
         }

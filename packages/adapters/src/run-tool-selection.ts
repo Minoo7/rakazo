@@ -34,6 +34,7 @@ export const READ_ONLY_AGENT_TOOLS = new Set([
   "ticket_get",
   "skill_read",
   "web_search",
+  "image_search",
   "web_fetch",
   "browser_snapshot",
   "list_secrets",
@@ -77,6 +78,7 @@ export function selectBuiltinToolsForRun(options: {
   /** The run's user connected a payment wallet. */
   paymentWalletEnabled?: boolean;
   mediaImagesEnabled?: boolean;
+  modelImageSearchEnabled?: boolean;
   mediaVideoEnabled?: boolean;
   messagingChannelRun: boolean;
   /** Hanging up is only offered to a turn the caller spoke on a live call. */
@@ -132,6 +134,7 @@ export function selectBuiltinToolsForRun(options: {
       (ownerStartedRun || (tool.name !== "update_preferences" && tool.name !== "feedback")) &&
       (options.paymentWalletEnabled || !PURCHASE_TOOL_NAMES.has(tool.name)) &&
       (options.mediaImagesEnabled || tool.name !== "generate_image") &&
+      (options.modelImageSearchEnabled || tool.name !== "image_search") &&
       (options.mediaVideoEnabled || tool.name !== "generate_video") &&
       (options.ticketBoardEnabled ||
         (tool.name !== "board_tickets" && !tool.name.startsWith("ticket_"))) &&
