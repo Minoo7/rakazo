@@ -135,6 +135,7 @@ import {
 import { modelAcceptsImageInput } from "./model-vision.js";
 import { usesNativeShell } from "./native-shell.js";
 import { paymentWalletConnected } from "./payment-wallets.js";
+import { supportsModelImageSearch } from "./pi-image-search.js";
 import { isRetiredModelCredentialError } from "./pi-oauth.js";
 import { restoreComputerModels } from "./pi-runtime-computer-mode.js";
 import { loadPurchaseRedactions } from "./purchase-service.js";
@@ -1426,6 +1427,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
             semanticMemoryEnabled,
             semanticMemoryForgets: Boolean(semanticMemory?.forget),
             mediaImagesEnabled: Boolean(deps.artifacts && mediaGeneration?.capabilities.images),
+            modelImageSearchEnabled: supportsModelImageSearch(mainRunModel.provider),
             mediaVideoEnabled: Boolean(deps.artifacts && mediaGeneration?.capabilities.video),
             cloudAgentEnabled: cloudAgentsEnabled(cloudAgent, run.spaceId),
             paymentWalletEnabled,
@@ -2069,6 +2071,7 @@ export function createRunExecutor(executorDeps: ExecutorDeps) {
                       runSecrets.push(...values),
                     ),
               onToolCompleted: (completion) => {
+                if (completion.name === "image_search") state.tainted = true;
                 if (effects.restoredPending?.executionId === completion.executionId)
                   effects.restoredPending = undefined;
                 if (!completion.paused)
